@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
-public class BaseState 
+public abstract class BaseState 
 {
     public abstract Type StateUpdate();
     public abstract Type StateEnter();
