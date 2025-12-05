@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PursueState : BaseState
+public class BJ_PursueState : BJ_BaseState
 {
-	private SmartTank tank;
+	private BJ_SmartTank tank;
 
-	public PursueState(SmartTank tank)
+	public BJ_PursueState(BJ_SmartTank tank)
 	{
 		this.tank = tank;
 	}
@@ -33,7 +33,7 @@ public class PursueState : BaseState
 		float distanceToEnemy = Vector3.Distance(tank.transform.position, tank.enemyTank.transform.position);
 
 		// If enemy tank is in range, switch to AttackState
-		if (distanceToEnemy < tank.attackRange)
+		if (distanceToEnemy < (tank.pursueRange / 2))
 		{
 			return typeof(AttackState);
 		}
@@ -42,9 +42,11 @@ public class PursueState : BaseState
 		{
 			return typeof(PatrolState);
 		}
-		// ----------
-		//   Pursue
-		// ----------
+		/* 
+		 * ------------
+		 * Pursue logic
+		 * ------------
+		*/
 		else
 		{
 			Vector3 targetPos = tank.enemyTank.transform.position;
@@ -52,7 +54,7 @@ public class PursueState : BaseState
 
 			// Rotate in the direction of enemy tank
 			Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
-			tank.transform.rotation = Quaternion.Slerp(tank.transform.rotation, targetRotation, tank.turnSpeed * Time.deltaTime);
+			tank.transform.rotation = Quaternion.Slerp(tank.transform.rotation, targetRotation, tank.bodyRotationSpeed * Time.deltaTime);
 
 			// Move forward using pathfinding
 			tank.FollowPathToWorldPoint(tank.enemyTank, 1.0f);
