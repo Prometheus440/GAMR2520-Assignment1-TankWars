@@ -34,35 +34,97 @@ public class BJ_FleeState : BJ_BaseState
 		// If tank is low on health
 		if (tank.TankCurrentHealth <= 35.0f)
 		{
-			// Find the health item in the dictionary
-			var healthItem = tank.VisibleConsumables.FirstOrDefault(c => c.Key.tag == "Health").Key;
-
-			// Prevent crash if theres no heal found
-			if (healthItem != null)
-			{
-				fleeTarget = healthItem;
-				tank.FollowPathToWorldPoint(healthItem, 1.0f);
-
-				if (LocationReached(healthItem))
-				{
-					tank.VisibleConsumables.Remove(healthItem);
-					fleeTarget = null;
-				}
-			}
-			// If there are no heals, just run to a random point
-			else
-			{
-				FleeToARandomPoint();
-			}
-
+			LowHealthFlee();
 		}
-		// If tank health is fine
+		// If tank health is fine but low on fuel
+		else if (tank.TankCurrentFuel <= 25.0f)
+		{
+			LowFuelFlee();
+		}
+		// If tank health and fuel is fine but ammo is low
+		else if (tank.TankCurrentAmmo <= 2.0f)
+		{
+			LowAmmoFlee();
+		}
+		// If tank is okay
 		else
 		{
 			fleeTarget = null;
 		}
 
 		return null;
+	}
+
+	void LowHealthFlee()
+	{
+		// Find the health item in the dictionary
+		var healthItem = tank.VisibleConsumables.FirstOrDefault(c => c.Key.tag == "Health").Key;
+
+		// Prevent crash if theres no heal found
+		if (healthItem != null)
+		{
+			fleeTarget = healthItem;
+			tank.FollowPathToWorldPoint(healthItem, 1.0f);
+
+			if (LocationReached(healthItem))
+			{
+				tank.VisibleConsumables.Remove(healthItem);
+				fleeTarget = null;
+			}
+		}
+		// If there are no heals, just run to a random point
+		else
+		{
+			FleeToARandomPoint();
+		}
+	}
+
+	void LowAmmoFlee()
+	{
+		// Find the ammo item in the dictionary
+		var ammoItem = tank.VisibleConsumables.FirstOrDefault(c => c.Key.tag == "Ammo").Key;
+
+		// Prevent crash if theres no ammo found
+		if (ammoItem != null)
+		{
+			fleeTarget = ammoItem;
+			tank.FollowPathToWorldPoint(ammoItem, 1.0f);
+
+			if (LocationReached(ammoItem))
+			{
+				tank.VisibleConsumables.Remove(ammoItem);
+				fleeTarget = null;
+			}
+		}
+		// If there are no ammo, just run to a random point
+		else
+		{
+			FleeToARandomPoint();
+		}
+	}
+
+	void LowFuelFlee()
+	{
+		// Find the fuel item in the dictionary
+		var fuelItem = tank.VisibleConsumables.FirstOrDefault(c => c.Key.tag == "Fuel").Key;
+
+		// Prevent crash if theres no fuel found
+		if (fuelItem != null)
+		{
+			fleeTarget = fuelItem;
+			tank.FollowPathToWorldPoint(fuelItem, 1.0f);
+
+			if (LocationReached(fuelItem))
+			{
+				tank.VisibleConsumables.Remove(fuelItem);
+				fleeTarget = null;
+			}
+		}
+		// If there are no fuel, just run to a random point
+		else
+		{
+			FleeToARandomPoint();
+		}
 	}
 
 	void FleeToARandomPoint()
