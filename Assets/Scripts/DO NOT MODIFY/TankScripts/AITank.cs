@@ -1027,12 +1027,4 @@ public abstract class AITank : MonoBehaviour
     /// Replaces <c>OnCollisionEnter</c> function and should be used when inheriting.
     /// </summary>
     public abstract void AIOnCollisionEnter(Collision collision);
-
-
-
-
 }
-
-
-
-

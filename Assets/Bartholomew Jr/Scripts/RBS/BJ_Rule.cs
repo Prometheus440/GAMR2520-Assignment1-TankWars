@@ -11,7 +11,7 @@ public class BJ_Rule
 	public Type consequentState;
 
 	public Predicate compare;
-	public enum Predicate { And, Or, nAnd}
+	public enum Predicate { And, Or, nAnd, notAAndB}
 
 
 	public BJ_Rule(string antedecentA, string antedecentB, Type consequentState, Predicate compare)
@@ -49,6 +49,15 @@ public class BJ_Rule
 				}
 			case Predicate.nAnd:
 				if (!antedecentABool && !antedecentBBool)
+				{
+					return consequentState;
+				}
+				else
+				{
+					return null;
+				}
+			case Predicate.notAAndB:
+				if (!antedecentABool && antedecentBBool)
 				{
 					return consequentState;
 				}

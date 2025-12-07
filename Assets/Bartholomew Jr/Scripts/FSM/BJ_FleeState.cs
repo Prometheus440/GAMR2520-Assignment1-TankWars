@@ -16,11 +16,13 @@ public class BJ_FleeState : BJ_BaseState
 
 	public override Type StateEnter()
 	{
+		tank.stats["fleeState"] = true;
 		return null;
 	}
 
 	public override Type StateExit()
 	{
+		tank.stats["fleeState"] = false;
 		return null;
 	}
 
@@ -31,6 +33,7 @@ public class BJ_FleeState : BJ_BaseState
 		 * Flee logic
 		 * ------------
 		*/
+		// In order of importance
 		// If tank is low on health
 		if (tank.TankCurrentHealth <= 35.0f)
 		{
@@ -46,10 +49,20 @@ public class BJ_FleeState : BJ_BaseState
 		{
 			LowAmmoFlee();
 		}
+
 		// If tank is okay
-		else
+		if (fleeTarget == null)
 		{
-			fleeTarget = null;
+			return typeof(BJ_PatrolState);
+		}
+
+		// Run tank rules
+		foreach (var item in tank.rules.GetRules)
+		{
+			if (item.CheckRule(tank.stats) != null)
+			{
+				return item.CheckRule(tank.stats);
+			}
 		}
 
 		return null;
@@ -135,16 +148,12 @@ public class BJ_FleeState : BJ_BaseState
 			tank.GenerateNewRandomWorldPoint();
 		}
 
-		// Get to the flee point
-		if (fleeTarget != null)
-		{
-			tank.FollowPathToWorldPoint(fleeTarget, 1.0f);
+		tank.FollowPathToWorldPoint(fleeTarget, 1.0f);
 
-			// When the tank has reached the flee point, make a new one
-			if (LocationReached(fleeTarget))
-			{
-				tank.GenerateNewRandomWorldPoint();
-			}
+		// When the tank has reached the flee point, make a new one
+		if (LocationReached(fleeTarget))
+		{
+			tank.GenerateNewRandomWorldPoint();
 		}
 	}
 
