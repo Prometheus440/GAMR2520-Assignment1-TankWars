@@ -4,25 +4,24 @@ using System.IO;
 using System.Xml.Serialization;
 using UnityEngine;
 using System;
+using System.Linq;
 
 public class BJ_SmartTank : DumbTank
 {
 	private BJ_BaseState currentState;
 
 	public float pursueRange = 52.0f; // from AITank viewRadius = 52.0f
+	public float attackRange = 25.0f;
 	public float smartTankBodyRotationSpeed = 7.0f; // from AITank bodyRotationSpeed = 7.0f
 
 	public Dictionary<string, bool> stats = new Dictionary<string, bool>();
 	public BJ_Rules rules = new BJ_Rules();
-	public bool lowHealth;
-	public bool lowFuel;
-	public bool lowAmmo;
 
 	void InitialiseStats()
 	{
-		stats.Add("lowHealth", lowHealth);
-		stats.Add("lowFuel", lowFuel);
-		stats.Add("lowAmmo", lowAmmo);
+		stats.Add("lowHealth", false);
+		stats.Add("lowFuel", false);
+		stats.Add("lowAmmo", false);
 		stats.Add("targetSpotted", false);
 		stats.Add("targetReached", false);
 		stats.Add("fleeState", false);
@@ -57,7 +56,12 @@ public class BJ_SmartTank : DumbTank
 		rules.AddRule(new BJ_Rule("pursueState", "targetReached", typeof(BJ_AttackState), BJ_Rule.Predicate.And));
 	}
 
-	private void Start()
+    public override void AIOnCollisionEnter(Collision collision)
+    {
+        base.AIOnCollisionEnter(collision);
+    }
+
+	public override void AITankStart()
 	{
 		InitialiseStats();
 		InitialiseRules();
@@ -67,47 +71,45 @@ public class BJ_SmartTank : DumbTank
 		currentState.StateEnter();
 	}
 
-	private void Update()
+	public override void AITankUpdate()
 	{
-		// Assign enemy tank
-		if (enemyTank == null)
+		// Detect enemies
+		if (VisibleEnemyTanks.Count > 0)
 		{
-			DumbTank newEnemy = FindObjectOfType<DumbTank>();
-
-			if (newEnemy != null && newEnemy.gameObject != this.gameObject)
-			{
-				enemyTank = newEnemy.gameObject;
-			}
+			enemyTank = VisibleEnemyTanks.First().Key;
+		}
+		else
+		{
+			enemyTank = null;
 		}
 
 		stats["lowHealth"] = TankCurrentHealth <= 35.0f;
 		stats["lowFuel"] = TankCurrentFuel <= 25.0f;
 		stats["lowAmmo"] = TankCurrentAmmo <= 2.0f;
 
-		if (enemyTank != null)
-		{
-			CheckTargetSpotted();
-			CheckTargetReached();
-			// Update FSM
-			if (currentState != null)
-			{
-				Type nextStateType = currentState.StateUpdate();
+		CheckTargetSpotted();
+		CheckTargetReached();
 
-				if (nextStateType != null)
-				{
-					currentState.StateExit();
-					currentState = (BJ_BaseState)Activator.CreateInstance(nextStateType, this);
-					currentState.StateEnter();
-				}
+		// Update FSM
+		if (currentState != null)
+		{
+			Type nextStateType = currentState.StateUpdate();
+
+			if (nextStateType != null)
+			{ 
+				currentState.StateExit();
+				currentState = (BJ_BaseState)Activator.CreateInstance(nextStateType, this);
+				currentState.StateEnter();
 			}
 		}
 	}
 
 	public void CheckTargetSpotted()
 	{
-		if (Vector3.Distance(transform.position, enemyTank.transform.position) < pursueRange)
+		if (enemyTank != null)
 		{
-			stats["targetSpotted"] = true;
+			float checkPursueDistance = Vector3.Distance(transform.position, enemyTank.transform.position);
+			stats["targetSpotted"] = checkPursueDistance < pursueRange;
 		}
 		else
 		{
@@ -117,9 +119,10 @@ public class BJ_SmartTank : DumbTank
 
 	public void CheckTargetReached()
 	{
-		if (Vector3.Distance(transform.position, enemyTank.transform.position) < 1.5f)
+		if (enemyTank != null)
 		{
-			stats["targetReached"] = true;
+			float checkAttackDistance = Vector3.Distance(transform.position, enemyTank.transform.position);
+			stats["targetReached"] = checkAttackDistance < attackRange;
 		}
 		else
 		{

@@ -8,8 +8,6 @@ public class BJ_AttackState : BJ_BaseState
 {
 	private BJ_SmartTank tank;
 
-	private float time = 0f;
-
 	public BJ_AttackState(BJ_SmartTank tank)
 	{
 		this.tank = tank;
@@ -42,7 +40,16 @@ public class BJ_AttackState : BJ_BaseState
 		{
 			return typeof(BJ_PursueState);
 		}
-		
+
+		/* 
+		 * ------------
+		 * Attack logic
+		 * ------------
+		*/
+		// Turn turret at enemy and fire
+		tank.TurretFaceWorldPoint(tank.enemyTank);
+		tank.TurretFireAtPoint(tank.enemyTank);
+
 		// Run tank rules
 		foreach (var item in tank.rules.GetRules)
 		{
@@ -51,16 +58,6 @@ public class BJ_AttackState : BJ_BaseState
 				return item.CheckRule(tank.stats);
 			}
 		}
-
-		/* 
-		 * ------------
-		 * Attack logic
-		 * ------------
-		*/
-
-		// Turn turret at enemy and fire
-		tank.TurretFaceWorldPoint(tank.enemyTank);
-		tank.TurretFireAtPoint(tank.enemyTank);
 
 		return null;
 	}

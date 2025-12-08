@@ -26,7 +26,7 @@ public class BJ_PursueState : BJ_BaseState
 
 	public override Type StateUpdate()
 	{
-		// Check if tank is alive
+		// Check if enemy tank is alive
 		if (tank.enemyTank == null)
 		{
 			return typeof(BJ_PatrolState);
@@ -35,7 +35,7 @@ public class BJ_PursueState : BJ_BaseState
 		float distanceToEnemy = Vector3.Distance(tank.transform.position, tank.enemyTank.transform.position);
 
 		// If enemy tank is in range, switch to AttackState
-		if (distanceToEnemy < (tank.pursueRange / 2))
+		if (distanceToEnemy < tank.attackRange)
 		{
 			return typeof(BJ_AttackState);
 		}
@@ -44,10 +44,17 @@ public class BJ_PursueState : BJ_BaseState
 		{
 			return typeof(BJ_PatrolState);
 		}
-		else
-		{
-			Pursue();
-		}
+
+		/* 
+		* ------------
+		* Pursue logic
+		* ------------
+		*/
+		// Move forward using pathfinding
+		tank.FollowPathToWorldPoint(tank.enemyTank, 1.0f);
+
+		// Aim turret at enemy
+		tank.TurretFaceWorldPoint(tank.enemyTank);
 
 		// Run tank rules
 		foreach (var item in tank.rules.GetRules)
@@ -59,26 +66,5 @@ public class BJ_PursueState : BJ_BaseState
 		}
 
 		return null;
-	}
-
-	void Pursue()
-	{
-		/* 
-		* ------------
-		* Pursue logic
-		* ------------
-		*/
-		Vector3 targetPos = tank.enemyTank.transform.position;
-		Vector3 direction = (targetPos - tank.transform.position).normalized;
-
-		// Rotate in the direction of enemy tank
-		Quaternion targetRotation = Quaternion.LookRotation(direction, Vector3.up);
-		tank.transform.rotation = Quaternion.Slerp(tank.transform.rotation, targetRotation, tank.smartTankBodyRotationSpeed * Time.deltaTime);
-
-		// Move forward using pathfinding
-		tank.FollowPathToWorldPoint(tank.enemyTank, 1.0f);
-
-		// Aim turret at enemy
-		tank.TurretFaceWorldPoint(tank.enemyTank);
 	}
 }
