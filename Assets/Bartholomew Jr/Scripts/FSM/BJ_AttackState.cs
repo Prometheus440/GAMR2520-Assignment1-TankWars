@@ -9,6 +9,8 @@ public class BJ_AttackState : BJ_BaseState
 {
 	private BJ_SmartTank tank;
 	private float attackClosest = 12.0f;
+	private GameObject backupPoint;
+	private GameObject currentTarget;
 
 	public BJ_AttackState(BJ_SmartTank tank)
 	{
@@ -32,20 +34,22 @@ public class BJ_AttackState : BJ_BaseState
 		// Check for flee conditions
 		if (tank.stats["lowHealth"] || tank.stats["lowFuel"] || tank.stats["lowAmmo"])
 		{
-			Debug.Log("AttackState: Resources low, switching to Flee");
 			return typeof(BJ_FleeState);
 		}
 
-		// Select target
-		GameObject target = GetTarget();
+		// If no target, make one
+		if (currentTarget == null)
+		{
+			currentTarget = GetTarget();
+		}
 
 		// Return to patrol if no enemy spotted
-		if (target == null)
+		if (currentTarget == null)
 		{
 			return typeof(BJ_PatrolState);
 		}
 
-		float distanceBetweenTanks = Vector3.Distance(tank.transform.position, target.transform.position);
+		float distanceBetweenTanks = Vector3.Distance(tank.transform.position, currentTarget.transform.position);
 
 		// If enemy has moved away, pursue
 		if (distanceBetweenTanks > tank.pursueRange)
@@ -56,14 +60,17 @@ public class BJ_AttackState : BJ_BaseState
 		// Tanks can get too close and projectiles can clip through tanks and cause endless loops
 		if (distanceBetweenTanks < attackClosest)
 		{
-			CreateDistance(target);
+			CreateDistance(currentTarget);
+
+			// Stay facing enemy
+			tank.TurretFaceWorldPoint(currentTarget);
 		}
 		// Normal attack
 		else
 		{
 			tank.TankStop();
-			tank.TurretFaceWorldPoint(target);
-			tank.TurretFireAtPoint(target);
+			tank.TurretFaceWorldPoint(currentTarget);
+			tank.TurretFireAtPoint(currentTarget);
 		}
 
 		/* 
@@ -86,20 +93,29 @@ public class BJ_AttackState : BJ_BaseState
 
 	void CreateDistance(GameObject target)
 	{
-		// Calculate direction to enemy to move directly backwards
-		Vector3 directionToEnemy = (tank.transform.position - target.transform.position).normalized;
-		// Add distance to move
-		Vector3 backupPosition = tank.transform.position + (directionToEnemy * 15);
+		if (backupPoint == null)
+		{
+			// Create target back up point
+			backupPoint = new GameObject("BackupPoint");
+		}
 
-		// Create target back up point
-		GameObject backupPoint = new GameObject("BackupPoint");
-		// Set the gameobject to the vector
-		backupPoint.transform.position = backupPosition;
+		float distanceToTarget = Vector3.Distance(tank.transform.position, target.transform.position);
 
-		tank.FollowPathToWorldPoint(backupPoint, 0.8f);
+		if (distanceToTarget < attackClosest)
+		{
+			float moveDistance = attackClosest - distanceToTarget;
 
-		// Destroy game object once reached
-		GameObject.Destroy(backupPoint, 5f);
+			// Calculate direction to enemy to move directly backwards
+			Vector3 directionToEnemy = (tank.transform.position - target.transform.position).normalized;
+			// Add distance to move
+			backupPoint.transform.position = tank.transform.position + (directionToEnemy * moveDistance);
+
+			tank.FollowPathToWorldPoint(backupPoint, 0.8f);
+		}
+		else
+		{
+			tank.TankStop();
+		}
 	}
 
 	private GameObject GetTarget()

@@ -7,6 +7,7 @@ using UnityEngine;
 public class BJ_PatrolState : BJ_BaseState
 {
 	private BJ_SmartTank tank;
+	private GameObject currentConsumable;
 
 	public BJ_PatrolState(BJ_SmartTank tank)
 	{
@@ -16,12 +17,14 @@ public class BJ_PatrolState : BJ_BaseState
 	public override Type StateEnter()
 	{
 		tank.stats["patrolState"] = true;
+		currentConsumable = null;
 		return null;
 	}
 
 	public override Type StateExit()
 	{
 		tank.stats["patrolState"] = false;
+		currentConsumable = null;
 		return null;
 	}
 
@@ -49,38 +52,39 @@ public class BJ_PatrolState : BJ_BaseState
 		* Patrol logic
 		* ------------
 		*/
-		tank.FollowPathToRandomWorldPoint(0.7f);
 
 		// Collect a power up that is close while patrolling
 		if (tank.VisibleConsumables.Count > 0)
 		{
-			// Dont waste fuel if health or ammo is full
-			if (tank.TankCurrentHealth < 125f || tank.TankCurrentAmmo < 20f)
+			// Do not lave until that consumable is collected
+			if (currentConsumable == null || !currentConsumable.activeInHierarchy)
 			{
-				GameObject closestConsumable = null;
-				float consumableDistance = float.MaxValue;
-					
+				float minDistance = float.MaxValue;
+
 				// For each keyValuepair in the dictionary
 				foreach (var kvp in tank.VisibleConsumables)
 				{
-					GameObject consumable = kvp.Key;
+					GameObject c = kvp.Key;
 
-					float distance = Vector3.Distance(tank.transform.position, consumable.transform.position);
+					float distance = Vector3.Distance(tank.transform.position, c.transform.position);
 
-					if (distance < consumableDistance)
+					if (distance < minDistance)
 					{
-						consumableDistance = distance;
-						closestConsumable = consumable;
-
+						minDistance = distance;
+						currentConsumable = c;
 					}
 				}
+			}
 
-				if (closestConsumable != null)
-				{
-					tank.FollowPathToWorldPoint(closestConsumable, 0.7f);
-				}
+			if (currentConsumable != null)
+			{
+				tank.FollowPathToWorldPoint(currentConsumable, 0.7f);
+				return null;
 			}
 		}
+
+		// Random patrol if no consumables or enemies
+		tank.FollowPathToRandomWorldPoint(0.7f);
 
 		// Run tank rules
 		foreach (var item in tank.rules.GetRules)
