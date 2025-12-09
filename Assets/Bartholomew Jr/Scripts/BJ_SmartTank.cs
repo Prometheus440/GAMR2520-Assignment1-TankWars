@@ -10,9 +10,12 @@ public class BJ_SmartTank : DumbTank
 {
 	private BJ_BaseState currentState;
 
-	public float pursueRange = 52.0f; // from AITank viewRadius = 52.0f
+	public float pursueRange = 37.0f; // from AITank viewRadius = 52.0f
 	public float attackRange = 25.0f;
 	public float smartTankBodyRotationSpeed = 7.0f; // from AITank bodyRotationSpeed = 7.0f
+
+	public List<GameObject> EnemyBases;
+	public GameObject targetBase;
 
 	public Dictionary<string, bool> stats = new Dictionary<string, bool>();
 	public BJ_Rules rules = new BJ_Rules();
@@ -109,10 +112,6 @@ public class BJ_SmartTank : DumbTank
 		CheckTargetSpotted();
 		CheckTargetReached();
 
-		if (currentState != null)
-		{
-			Debug.Log($"State: {currentState.GetType().Name}, Health: {TankCurrentHealth}, Ammo: {TankCurrentAmmo}, Fuel: {TankCurrentFuel}");
-		}
 
 		// Update FSM
 		if (currentState != null)

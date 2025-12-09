@@ -89,14 +89,15 @@ public class BJ_FleeState : BJ_BaseState
 		var fuelItem = tank.VisibleConsumables.FirstOrDefault(c => c.Key != null && c.Key.tag == "Fuel").Key;
 
 		// Prevent crash if theres no fuel found
+		// Move slower to reduce fuel consumption
 		if (fuelItem != null)
 		{
-			tank.FollowPathToWorldPoint(fuelItem, 1.0f);
+			tank.FollowPathToWorldPoint(fuelItem, 0.5f);
 		}
 		// If there are no fuel, just run to a random point
 		else
 		{
-			tank.FollowPathToRandomWorldPoint(1.0f);
+			tank.FollowPathToRandomWorldPoint(0.5f);
 		}
 	}
 
