@@ -29,7 +29,6 @@ public class BJ_PursueState : BJ_BaseState
 		// Check for flee conditions
 		if (tank.stats["lowHealth"] || tank.stats["lowFuel"] || tank.stats["lowAmmo"])
 		{
-			Debug.Log("PursueState: Resources low, switching to Flee");
 			return typeof(BJ_FleeState);
 		}
 

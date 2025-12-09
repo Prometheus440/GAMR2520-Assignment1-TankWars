@@ -21,6 +21,8 @@ public class BJ_SmartTank : DumbTank
 	public BJ_Rules rules = new BJ_Rules();
 
 	private bool isInitialised = false;
+	private bool enemyLowFuel = false;
+
 	void InitialiseStats()
 	{
 		// Only initialise stats if empty
@@ -35,6 +37,8 @@ public class BJ_SmartTank : DumbTank
 			stats.Add("pursueState", false);
 			stats.Add("patrolState", false);
 			stats.Add("attackState", false);
+			stats.Add("outrunState", false);
+			stats.Add("enemyLowFuel", false);
 		}
 	}
 
@@ -64,6 +68,9 @@ public class BJ_SmartTank : DumbTank
 			rules.AddRule(new BJ_Rule("targetSpotted", "attackState", typeof(BJ_PatrolState), BJ_Rule.Predicate.notAAndB));
 			// Reached target so attack
 			rules.AddRule(new BJ_Rule("pursueState", "targetReached", typeof(BJ_AttackState), BJ_Rule.Predicate.And));
+			// If fighting is risky outrun tank
+			rules.AddRule(new BJ_Rule("lowAmmo", "enemyLowFuel", typeof(BJ_OutrunState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("lowHealth", "enemyLowFuel", typeof(BJ_OutrunState), BJ_Rule.Predicate.And));
 		}
 	}
 
@@ -111,6 +118,7 @@ public class BJ_SmartTank : DumbTank
 
 		CheckTargetSpotted();
 		CheckTargetReached();
+		CheckFuel();
 
 
 		// Update FSM
@@ -150,6 +158,23 @@ public class BJ_SmartTank : DumbTank
 		else
 		{
 			stats["targetReached"] = false;
+		}
+	}
+
+	public void CheckFuel()
+	{
+		if (enemyTank != null)
+		{
+			DumbTank enemy = enemyTank.GetComponent<DumbTank>();
+
+			if (enemy != null)
+			{
+				stats["enemyLowFuel"] = enemy.TankCurrentFuel < TankCurrentFuel;
+			}
+			else
+			{
+				stats["enemyLowFuel"] = false;
+			}
 		}
 	}
 }
