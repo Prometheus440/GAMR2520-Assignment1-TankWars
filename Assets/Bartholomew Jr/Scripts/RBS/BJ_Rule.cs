@@ -6,31 +6,31 @@ using System.Data;
 
 public class BJ_Rule
 {
-	public string antedecentA;
-	public string antedecentB;
+	public string antecedentA;
+	public string antecedentB;
 	public Type consequentState;
 
 	public Predicate compare;
 	public enum Predicate { And, Or, nAnd, notAAndB}
 
 
-	public BJ_Rule(string antedecentA, string antedecentB, Type consequentState, Predicate compare)
+	public BJ_Rule(string antecedentA, string antecedentB, Type consequentState, Predicate compare)
 	{
-		this.antedecentA = antedecentA;
-		this.antedecentB = antedecentB;
+		this.antecedentA = antecedentA;
+		this.antecedentB = antecedentB;
 		this.consequentState = consequentState;
 		this.compare = compare;
 	}
 
 	public Type CheckRule(Dictionary<string, bool> stats)
 	{
-		bool antedecentABool = stats[antedecentA];
-		bool antedecentBBool = stats[antedecentB];
+		bool antecedentABool = stats[antecedentA];
+		bool antecedentBBool = stats[antecedentB];
 
 		switch (compare)
 		{
 			case Predicate.And:
-				if (antedecentABool && antedecentBBool)
+				if (antecedentABool && antecedentBBool)
 				{
 					return consequentState;
 				}
@@ -39,7 +39,7 @@ public class BJ_Rule
 					return null;
 				}
 			case Predicate.Or:
-				if (antedecentABool || antedecentBBool)
+				if (antecedentABool || antecedentBBool)
 				{
 					return consequentState;
 				}
@@ -48,7 +48,7 @@ public class BJ_Rule
 					return null;
 				}
 			case Predicate.nAnd:
-				if (!antedecentABool && !antedecentBBool)
+				if (!antecedentABool && !antecedentBBool)
 				{
 					return consequentState;
 				}
@@ -57,7 +57,7 @@ public class BJ_Rule
 					return null;
 				}
 			case Predicate.notAAndB:
-				if (!antedecentABool && antedecentBBool)
+				if (!antecedentABool && antecedentBBool)
 				{
 					return consequentState;
 				}
