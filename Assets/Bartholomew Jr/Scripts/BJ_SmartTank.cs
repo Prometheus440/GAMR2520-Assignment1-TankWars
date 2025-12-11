@@ -96,6 +96,8 @@ public class BJ_SmartTank : DumbTank
 
 	public override void AITankUpdate()
 	{
+		// Debug.Log(currentState);
+
 		if (!isInitialised)
 		{
 			AITankStart();
