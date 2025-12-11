@@ -36,12 +36,21 @@ public class BJ_PatrolState : BJ_BaseState
 			return typeof(BJ_FleeState);
 		}
 
-		// If enemy is spotted check
+		// If enemy is spotted check or base
 		if (tank.enemyTank != null)
 		{
 			float distanceToEnemy = Vector3.Distance(tank.transform.position, tank.enemyTank.transform.position);
 
 			if (distanceToEnemy < tank.pursueRange)
+			{
+				return typeof(BJ_PursueState);
+			}
+		}
+		if (tank.EnemyBases != null)
+		{
+			float distanceToBases = Vector3.Distance(tank.transform.position, tank.EnemyBases.transform.position);
+
+			if (distanceToBases < tank.pursueRange)
 			{
 				return typeof(BJ_PursueState);
 			}

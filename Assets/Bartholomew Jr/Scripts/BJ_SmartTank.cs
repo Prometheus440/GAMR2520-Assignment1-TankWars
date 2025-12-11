@@ -102,14 +102,19 @@ public class BJ_SmartTank : DumbTank
 			return;
 		}
 
-		// Detect enemies
+		// Detect enemies and bases
 		if (VisibleEnemyTanks.Count > 0)
 		{
 			enemyTank = VisibleEnemyTanks.First().Key;
 		}
+		else if (VisibleEnemyBases.First)
+		{
+			EnemyBases = VisibleEnemyBases.First().Key;
+		}
 		else
 		{
 			enemyTank = null;
+			EnemyBases = null;
 		}
 
 		stats["lowHealth"] = TankCurrentHealth <= 35.0f;
@@ -142,6 +147,11 @@ public class BJ_SmartTank : DumbTank
 			float checkPursueDistance = Vector3.Distance(transform.position, enemyTank.transform.position);
 			stats["targetSpotted"] = checkPursueDistance < pursueRange;
 		}
+		else if (EnemyBases != null)
+		{
+			float checkPursueDistance = Vector3.Distance(transform.position, enemyBase.transform.position);
+			stats["targetSpotted"] = checkPursueDistance < pursueRange;
+		}
 		else
 		{
 			stats["targetSpotted"] = false;
@@ -153,6 +163,11 @@ public class BJ_SmartTank : DumbTank
 		if (enemyTank != null)
 		{
 			float checkAttackDistance = Vector3.Distance(transform.position, enemyTank.transform.position);
+			stats["targetReached"] = checkAttackDistance < attackRange;
+		}
+		else if (EnemyBases != null)
+		{
+			float checkAttackDistance = Vector3.Distance(transform.position, enemyBase.transform.position);
 			stats["targetReached"] = checkAttackDistance < attackRange;
 		}
 		else

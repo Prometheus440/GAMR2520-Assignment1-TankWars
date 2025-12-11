@@ -32,21 +32,23 @@ public class BJ_PursueState : BJ_BaseState
 			return typeof(BJ_FleeState);
 		}
 
-		// Check if enemy tank is alive
-		if (tank.enemyTank == null)
+		// Check if enemy tank is alive or bases
+		if (tank.enemyTank == null && tank.EnemyBases == null)
 		{
 			return typeof(BJ_PatrolState);
 		}
+		
 
 		float distanceToEnemy = Vector3.Distance(tank.transform.position, tank.enemyTank.transform.position);
+		float distanceToTarget = Vector3.Distance(tank.transform.position, tank.EnemyBases.transform.position);
 
-		// If enemy tank is in range, switch to AttackState
-		if (distanceToEnemy < tank.attackRange)
+		// If enemy tank is in range or base, switch to AttackState
+		if (distanceToEnemy < tank.attackRange || distanceToTarget < tank.attackRange) 
 		{
 			return typeof(BJ_AttackState);
 		}
 		// If enemy tank is outside of range, switch back to PatrolState
-		else if (distanceToEnemy > tank.pursueRange)
+		else if (distanceToEnemy > tank.pursueRange )
 		{
 			return typeof(BJ_PatrolState);
 		}
