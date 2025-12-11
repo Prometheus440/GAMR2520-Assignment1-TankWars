@@ -1,18 +1,19 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml.Serialization;
 using UnityEngine;
-using System;
-using System.Linq;
+using static UnityEngine.EventSystems.EventTrigger;
 
 public class BJ_SmartTank : DumbTank
 {
 	private BJ_BaseState currentState;
 
-	public float pursueRange = 37.0f; // from AITank viewRadius = 52.0f
+	public float pursueRange = 37.0f;
 	public float attackRange = 25.0f;
-	public float smartTankBodyRotationSpeed = 7.0f; // from AITank bodyRotationSpeed = 7.0f
+	public float smartTankBodyRotationSpeed = 7.0f;
 
 	public List<GameObject> EnemyBases;
 	public GameObject targetBase;
@@ -21,7 +22,6 @@ public class BJ_SmartTank : DumbTank
 	public BJ_Rules rules = new BJ_Rules();
 
 	private bool isInitialised = false;
-	private bool enemyLowFuel = false;
 
 	void InitialiseStats()
 	{
@@ -39,6 +39,7 @@ public class BJ_SmartTank : DumbTank
 			stats.Add("attackState", false);
 			stats.Add("outrunState", false);
 			stats.Add("enemyLowFuel", false);
+			stats.Add("enemyFleeing", false);
 		}
 	}
 
@@ -49,28 +50,28 @@ public class BJ_SmartTank : DumbTank
 			// Rules
 
 			// Low health so flee
-			rules.AddRule(new BJ_Rule("lowHealth", "attackState", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
-			rules.AddRule(new BJ_Rule("lowHealth", "pursueState", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
-			rules.AddRule(new BJ_Rule("lowHealth", "patrolState", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("lowHealth", "attackState", "", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("lowHealth", "pursueState", "", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("lowHealth", "patrolState", "", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
 			// Low fuel so flee
-			rules.AddRule(new BJ_Rule("lowFuel", "attackState", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
-			rules.AddRule(new BJ_Rule("lowFuel", "pursueState", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
-			rules.AddRule(new BJ_Rule("lowFuel", "patrolState", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("lowFuel", "attackState", "", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("lowFuel", "pursueState", "", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("lowFuel", "patrolState", "", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
 			// Low Ammo so flee
-			rules.AddRule(new BJ_Rule("lowAmmo", "attackState", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
-			rules.AddRule(new BJ_Rule("lowAmmo", "pursueState", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
-			rules.AddRule(new BJ_Rule("lowAmmo", "patrolState", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("lowAmmo", "attackState", "", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("lowAmmo", "pursueState", "", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("lowAmmo", "patrolState", "", typeof(BJ_FleeState), BJ_Rule.Predicate.And));
 			// Found target so pursue
-			rules.AddRule(new BJ_Rule("patrolState", "targetSpotted", typeof(BJ_PursueState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("patrolState", "targetSpotted", "", typeof(BJ_PursueState), BJ_Rule.Predicate.And));
 			// Lost target so patrol
-			rules.AddRule(new BJ_Rule("targetSpotted", "patrolState", typeof(BJ_PatrolState), BJ_Rule.Predicate.notAAndB));
-			rules.AddRule(new BJ_Rule("targetSpotted", "pursueState", typeof(BJ_PatrolState), BJ_Rule.Predicate.notAAndB));
-			rules.AddRule(new BJ_Rule("targetSpotted", "attackState", typeof(BJ_PatrolState), BJ_Rule.Predicate.notAAndB));
+			rules.AddRule(new BJ_Rule("targetSpotted", "patrolState", "", typeof(BJ_PatrolState), BJ_Rule.Predicate.notAAndB));
+			rules.AddRule(new BJ_Rule("targetSpotted", "pursueState", "", typeof(BJ_PatrolState), BJ_Rule.Predicate.notAAndB));
+			rules.AddRule(new BJ_Rule("targetSpotted", "attackState", "", typeof(BJ_PatrolState), BJ_Rule.Predicate.notAAndB));
 			// Reached target so attack
-			rules.AddRule(new BJ_Rule("pursueState", "targetReached", typeof(BJ_AttackState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("pursueState", "targetReached", "", typeof(BJ_AttackState), BJ_Rule.Predicate.And));
 			// If fighting is risky outrun tank
-			rules.AddRule(new BJ_Rule("lowAmmo", "enemyLowFuel", typeof(BJ_OutrunState), BJ_Rule.Predicate.And));
-			rules.AddRule(new BJ_Rule("lowHealth", "enemyLowFuel", typeof(BJ_OutrunState), BJ_Rule.Predicate.And));
+			rules.AddRule(new BJ_Rule("lowAmmo", "enemyLowFuel", "enemyFleeing", typeof(BJ_OutrunState), BJ_Rule.Predicate.AAndBNotC));
+			rules.AddRule(new BJ_Rule("lowHealth", "enemyLowFuel", "enemyFleeing", typeof(BJ_OutrunState), BJ_Rule.Predicate.AAndBNotC));
 		}
 	}
 
@@ -96,7 +97,7 @@ public class BJ_SmartTank : DumbTank
 
 	public override void AITankUpdate()
 	{
-		// Debug.Log(currentState);
+		Debug.Log(currentState);
 
 		if (!isInitialised)
 		{
@@ -177,6 +178,20 @@ public class BJ_SmartTank : DumbTank
 			{
 				stats["enemyLowFuel"] = false;
 			}
+		}
+	}
+
+	public void GetEnemyState()
+	{
+		DumbTank enemy = enemyTank.GetComponent<DumbTank>();
+
+		if (enemyTank != null)
+		{
+			stats["enemyFleeing"] = enemy.TankCurrentHealth < 30;
+		}
+		else
+		{
+			stats["enemyFleeing"] = false;
 		}
 	}
 }
