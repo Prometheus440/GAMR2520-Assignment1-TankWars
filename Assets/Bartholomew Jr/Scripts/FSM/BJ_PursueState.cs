@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class BJ_PursueState : BJ_BaseState
 {
+
 	private BJ_SmartTank tank;
 
 	public BJ_PursueState(BJ_SmartTank tank)
@@ -33,25 +34,49 @@ public class BJ_PursueState : BJ_BaseState
 		}
 
 		// Check if enemy tank is alive or bases
-		if (tank.enemyTank == null && tank.EnemyBases == null)
+		
+		if (tank.enemyTank == null && tank.enemyBase == null)
 		{
 			return typeof(BJ_PatrolState);
 		}
+
 		
 
-		float distanceToEnemy = Vector3.Distance(tank.transform.position, tank.enemyTank.transform.position);
-		float distanceToTarget = Vector3.Distance(tank.transform.position, tank.EnemyBases.transform.position);
+        if (tank.enemyTank != null)
+		{
+			float distanceToEnemy = Vector3.Distance(tank.transform.position, tank.enemyTank.transform.position);
+            if (distanceToEnemy < tank.attackRange)
+            {
+                return typeof(BJ_AttackState);
 
-		// If enemy tank is in range or base, switch to AttackState
-		if (distanceToEnemy < tank.attackRange || distanceToTarget < tank.attackRange) 
+            }
+
+            // If enemy tank is outside of range, switch back to PatrolState
+            else if (distanceToEnemy > tank.pursueRange)
+            {
+                return typeof(BJ_PatrolState);
+            }
+        }
+		if (tank.enemyBase != null)
 		{
-			return typeof(BJ_AttackState);
-		}
-		// If enemy tank is outside of range, switch back to PatrolState
-		else if (distanceToEnemy > tank.pursueRange )
-		{
-			return typeof(BJ_PatrolState);
-		}
+			float distanceToEnemyBase = Vector3.Distance(tank.transform.position, tank.enemyBase.transform.position);
+
+
+            // If enemy tank is in range or base, switch to AttackState
+            if (distanceToEnemyBase < tank.attackRange)
+            {
+                return typeof(BJ_AttackState);
+
+            }
+
+            // If enemy tank is outside of range, switch back to PatrolState
+            else if (distanceToEnemyBase > tank.pursueRange)
+            {
+                return typeof(BJ_PatrolState);
+            }
+        }
+
+
 
 		/* 
 		* ------------
@@ -59,17 +84,25 @@ public class BJ_PursueState : BJ_BaseState
 		* ------------
 		*/
 		// Move forward using pathfinding
-		tank.FollowPathToWorldPoint(tank.enemyTank, 1.0f);
+		if (tank.enemyTank != null)
+		{
+			tank.FollowPathToWorldPoint(tank.enemyTank, 1.0f);
+			tank.TurretFaceWorldPoint(tank.enemyTank);
+		}
+		else if (tank.enemyBase != null)
+		{
+            tank.FollowPathToWorldPoint(tank.enemyBase, 1.0f);
+			tank.TurretFaceWorldPoint(tank.enemyBase);
+		}
 
-		// Aim turret at enemy
-		tank.TurretFaceWorldPoint(tank.enemyTank);
+        // Aim turret at enemy
 
-		// Run tank rules
-		foreach (var item in tank.rules.GetRules)
+        // Run tank rules
+        foreach (var item in tank.rules.GetRules)
 		{
 			if (item.CheckRule(tank.stats) != null)
 			{
-				return item.CheckRule(tank.stats);
+                return item.CheckRule(tank.stats);
 			}
 		}
 

@@ -46,24 +46,23 @@ public class BJ_PatrolState : BJ_BaseState
 				return typeof(BJ_PursueState);
 			}
 		}
-		if (tank.EnemyBases != null)
+		else if (tank.enemyBase != null)
 		{
-			float distanceToBases = Vector3.Distance(tank.transform.position, tank.EnemyBases.transform.position);
-
-			if (distanceToBases < tank.pursueRange)
+			float distanceToEnemyBase = Vector3.Distance(tank.transform.position, tank.enemyBase.transform.position);
+			if (distanceToEnemyBase < tank.pursueRange)
 			{
 				return typeof(BJ_PursueState);
 			}
-		}
+        }
 
-		/* 
+        /* 
 		* ------------
 		* Patrol logic
 		* ------------
 		*/
 
-		// Collect a power up that is close while patrolling
-		if (tank.VisibleConsumables.Count > 0)
+        // Collect a power up that is close while patrolling
+        if (tank.VisibleConsumables.Count > 0)
 		{
 			// Do not lave until that consumable is collected
 			if (currentConsumable == null || !currentConsumable.activeInHierarchy)

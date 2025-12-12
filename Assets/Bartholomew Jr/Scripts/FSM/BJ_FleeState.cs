@@ -8,6 +8,11 @@ public class BJ_FleeState : BJ_BaseState
 {
 	private BJ_SmartTank tank;
 
+	// Timer
+	private float fleeTimer = 0f;
+	private float fleeDuration = 10.0f;
+	private bool timerActive = false;
+
 	public BJ_FleeState(BJ_SmartTank tank)
 	{
 		this.tank = tank;
@@ -16,17 +21,32 @@ public class BJ_FleeState : BJ_BaseState
 	public override Type StateEnter()
 	{
 		tank.stats["fleeState"] = true;
+		RestartTimer();
 		return null;
 	}
 
 	public override Type StateExit()
 	{
 		tank.stats["fleeState"] = false;
+		RestartTimer();
 		return null;
 	}
 
 	public override Type StateUpdate()
 	{
+		// End flee after 10 seconds
+		if (timerActive)
+		{
+			// Count seconds
+			fleeTimer += Time.deltaTime;
+
+			if (fleeTimer >= fleeDuration)
+			{
+				RestartTimer();
+				return typeof(BJ_PatrolState);
+			}
+		}
+
 		/* 
 		 * ------------
 		 * Flee logic
@@ -37,16 +57,19 @@ public class BJ_FleeState : BJ_BaseState
 		if (tank.TankCurrentHealth <= 35.0f)
 		{
 			LowHealthFlee();
+			StartTimer();
 		}
 		// If tank health is fine but low on fuel
 		else if (tank.TankCurrentFuel <= 25.0f)
 		{
 			LowFuelFlee();
+			StartTimer();
 		}
 		// If tank health and fuel is fine but ammo is low
 		else if (tank.TankCurrentAmmo <= 2.0f)
 		{
 			LowAmmoFlee();
+			StartTimer();
 		}
 		// If tank is okay
 		else
@@ -117,4 +140,20 @@ public class BJ_FleeState : BJ_BaseState
 			tank.FollowPathToRandomWorldPoint(1.0f);
 		}
 	}
+	void StartTimer()
+	{
+		if (!timerActive)
+		{
+			// Start timer
+			timerActive = true;
+			fleeTimer = 0.0f;
+		}
+	}
+
+	void RestartTimer()
+	{
+		timerActive = false;
+		fleeTimer = 0.0f;
+	}
+	
 }
