@@ -14,6 +14,7 @@ public class BJ_OutrunState : BJ_BaseState
 	{
 		this.tank = tank;
 		this.enemyTank = enemyTank;
+		outrunPoint = new GameObject("OutrunPoint");
 	}
 
 	public override Type StateEnter()
@@ -53,27 +54,20 @@ public class BJ_OutrunState : BJ_BaseState
 			}
 		}
 
-		// Check if enemy tank is alive
-		if (tank.enemyTank != null)
+		if (tank.enemyTank == null)
 		{
-			// Find direction
-			Vector3 directionAway = (tank.transform.position - enemyTank.transform.position).normalized;
-
-			// Find safe distance
-			Vector3 outrunPos = tank.transform.position + directionAway * 15.0f;
-
-			outrunPoint.transform.position = outrunPos;
-
-			tank.FollowPathToWorldPoint(outrunPoint, 1.0f);
-
-			return null;
-		}
-		else
-		{
-			// Patrol if no enemy tank
 			return typeof(BJ_PatrolState);
 		}
 
+		// Find direction
+		Vector3 directionAway = (tank.transform.position - enemyTank.transform.position).normalized;
+
+		// Find safe distance
+		Vector3 outrunPos = tank.transform.position + (directionAway * 15.0f);
+
+		outrunPoint.transform.position = outrunPos;
+
+		tank.FollowPathToWorldPoint(outrunPoint, 1.0f, tank.heuristicMode);
 
 		return null;
 	}

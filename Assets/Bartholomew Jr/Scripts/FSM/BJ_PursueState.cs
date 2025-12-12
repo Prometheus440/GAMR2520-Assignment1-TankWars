@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class BJ_PursueState : BJ_BaseState
 {
+
 	private BJ_SmartTank tank;
 
 	public BJ_PursueState(BJ_SmartTank tank)
@@ -32,24 +33,51 @@ public class BJ_PursueState : BJ_BaseState
 			return typeof(BJ_FleeState);
 		}
 
-		// Check if enemy tank is alive
-		if (tank.enemyTank == null)
+		// Check if enemy tank is alive or bases
+
+		if (tank.enemyTank == null && tank.enemyBase == null)
 		{
 			return typeof(BJ_PatrolState);
 		}
 
-		float distanceToEnemy = Vector3.Distance(tank.transform.position, tank.enemyTank.transform.position);
 
-		// If enemy tank is in range, switch to AttackState
-		if (distanceToEnemy < tank.attackRange)
+
+		if (tank.enemyTank != null)
 		{
-			return typeof(BJ_AttackState);
+			float distanceToEnemy = Vector3.Distance(tank.transform.position, tank.enemyTank.transform.position);
+
+			if (distanceToEnemy < tank.attackRange)
+			{
+				return typeof(BJ_AttackState);
+
+			}
+
+			// If enemy tank is outside of range, switch back to PatrolState
+			else if (distanceToEnemy > tank.pursueRange)
+			{
+				return typeof(BJ_PatrolState);
+			}
 		}
-		// If enemy tank is outside of range, switch back to PatrolState
-		else if (distanceToEnemy > tank.pursueRange)
+		if (tank.enemyBase != null)
 		{
-			return typeof(BJ_PatrolState);
+			float distanceToEnemyBase = Vector3.Distance(tank.transform.position, tank.enemyBase.transform.position);
+
+
+			// If enemy tank is in range or base, switch to AttackState
+			if (distanceToEnemyBase < tank.attackRange)
+			{
+				return typeof(BJ_AttackState);
+
+			}
+
+			// If enemy tank is outside of range, switch back to PatrolState
+			else if (distanceToEnemyBase > tank.pursueRange)
+			{
+				return typeof(BJ_PatrolState);
+			}
 		}
+
+
 
 		/* 
 		* ------------
@@ -57,10 +85,18 @@ public class BJ_PursueState : BJ_BaseState
 		* ------------
 		*/
 		// Move forward using pathfinding
-		tank.FollowPathToWorldPoint(tank.enemyTank, 1.0f);
+		if (tank.enemyTank != null)
+		{
+			tank.FollowPathToWorldPoint(tank.enemyTank, 1.0f, tank.heuristicMode);
+			tank.TurretFaceWorldPoint(tank.enemyTank);
+		}
+		else if (tank.enemyBase != null)
+		{
+			tank.FollowPathToWorldPoint(tank.enemyBase, 1.0f, tank.heuristicMode);
+			tank.TurretFaceWorldPoint(tank.enemyBase);
+		}
 
 		// Aim turret at enemy
-		tank.TurretFaceWorldPoint(tank.enemyTank);
 
 		// Run tank rules
 		foreach (var item in tank.rules.GetRules)

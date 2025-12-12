@@ -36,12 +36,20 @@ public class BJ_PatrolState : BJ_BaseState
 			return typeof(BJ_FleeState);
 		}
 
-		// If enemy is spotted check
+		// If enemy is spotted check or base
 		if (tank.enemyTank != null)
 		{
 			float distanceToEnemy = Vector3.Distance(tank.transform.position, tank.enemyTank.transform.position);
 
 			if (distanceToEnemy < tank.pursueRange)
+			{
+				return typeof(BJ_PursueState);
+			}
+		}
+		else if (tank.enemyBase != null)
+		{
+			float distanceToEnemyBase = Vector3.Distance(tank.transform.position, tank.enemyBase.transform.position);
+			if (distanceToEnemyBase < tank.pursueRange)
 			{
 				return typeof(BJ_PursueState);
 			}
@@ -78,13 +86,13 @@ public class BJ_PatrolState : BJ_BaseState
 
 			if (currentConsumable != null)
 			{
-				tank.FollowPathToWorldPoint(currentConsumable, 0.7f);
+				tank.FollowPathToWorldPoint(currentConsumable, 0.7f, tank.heuristicMode);
 				return null;
 			}
 		}
 
 		// Random patrol if no consumables or enemies
-		tank.FollowPathToRandomWorldPoint(0.7f);
+		tank.FollowPathToRandomWorldPoint(0.7f, tank.heuristicMode);
 
 		// Run tank rules
 		foreach (var item in tank.rules.GetRules)

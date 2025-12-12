@@ -51,6 +51,7 @@ public class BJ_AttackState : BJ_BaseState
 
 		float distanceBetweenTanks = Vector3.Distance(tank.transform.position, currentTarget.transform.position);
 
+
 		// If enemy has moved away, pursue
 		if (distanceBetweenTanks > tank.pursueRange)
 		{
@@ -125,7 +126,7 @@ public class BJ_AttackState : BJ_BaseState
 		{
 			return tank.VisibleEnemyTanks.First().Key;
 		}
-		else if (tank.VisibleEnemyBases.Count > 0)
+		if (tank.VisibleEnemyBases.Count > 0)
 		{
 			return tank.VisibleEnemyBases.First().Key;
 		}
