@@ -1,15 +1,16 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using System;
 
-public class StateMachine : MonoBehaviour
+public class BJ_StateMachine : MonoBehaviour
 {
-    private Dictionary<Type, BaseState> states;
+    private Dictionary<Type, BJ_BaseState> states;
 
-    public BaseState currentState;
-    public BaseState CurrentState
+    public BJ_BaseState currentState;
+
+    public BJ_BaseState CurrentState
     {
         get
         {
@@ -21,7 +22,7 @@ public class StateMachine : MonoBehaviour
         }
     }
 
-    public void SetStates(Dictionary<Type, BaseState> states)
+    public void SetStates(Dictionary<Type, BJ_BaseState> states)
     {
         this.states = states;
     }
@@ -31,12 +32,13 @@ public class StateMachine : MonoBehaviour
         if (CurrentState == null)
         {
             CurrentState = states.Values.First();
+            CurrentState.StateEnter();
         }
         else
         {
             var nextState = CurrentState.StateUpdate();
 
-            if(nextState != null && nextState != CurrentState.GetType())
+            if (nextState != null && nextState != CurrentState.GetType())
             {
                 SwitchToState(nextState);
             }
