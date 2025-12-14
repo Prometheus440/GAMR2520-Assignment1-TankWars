@@ -34,7 +34,7 @@ public class BaseScript : MonoBehaviour
         if (collision.gameObject.tag == "Projectile" && baseHit == false)
         {
             bCollider.isTrigger = false;
-            print(this.transform.parent.gameObject.name + " base has been hit!");
+            //print(this.transform.parent.gameObject.name + " base has been hit!");
             baseHit = true;
             StartCoroutine(BaseDestroyed());
             modelGO.SetActive(false);

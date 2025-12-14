@@ -84013,7 +84013,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6476035129251550884}
   m_Layer: 0
-  m_Name: DumbTankTheSecond - RENAME
+  m_Name: Bartholomew Jr
   m_TagString: Untagged
   m_Icon: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -99935,7 +99935,7 @@ GameObject:
   - component: {fileID: 4117438475152212021}
   - component: {fileID: 91697828574889090}
   - component: {fileID: 9162085611844313067}
-  - component: {fileID: 8826225106348988319}
+  - component: {fileID: 9162085611844313068}
   m_Layer: 13
   m_Name: Tank
   m_TagString: Tank
@@ -100223,22 +100223,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &8826225106348988319
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8075740477363419617}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58948fffe4733604497fe40f012a122f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  enemyTank: {fileID: 0}
-  consumable: {fileID: 0}
-  enemyBase: {fileID: 0}
-  heuristicMode: 2
 --- !u!23 &9012254866648180716
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -100587,6 +100571,27 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &9162085611844313068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8075740477363419617}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd10d222a6989584aaa4231b65d64d76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyTank: {fileID: 0}
+  consumable: {fileID: 0}
+  enemyBase: {fileID: 0}
+  heuristicMode: 0
+  pursueRange: 52
+  attackRange: 25
+  smartTankBodyRotationSpeed: 7
+  EnemyBases: []
+  targetBase: {fileID: 0}
 --- !u!1 &9177135291343502959
 GameObject:
   m_ObjectHideFlags: 0
