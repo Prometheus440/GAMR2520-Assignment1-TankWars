@@ -83,6 +83,7 @@ public class BJ_SmartTank : DumbTank
 		}
 	}
 
+	//Checks enemy health, used for the outrun state
 	public void CheckEnemyState()
 	{
 		if (enemyTank != null)
@@ -120,6 +121,7 @@ public class BJ_SmartTank : DumbTank
 		});
 	}
 
+	//Checks if low on any consumable 
 	public BJ_BTNodeState HealthCheck()
 	{
 		if (stats["lowHealth"])
@@ -156,6 +158,7 @@ public class BJ_SmartTank : DumbTank
 		}
 	}
 
+	//Checks if a base or enemy is spotted
 	public BJ_BTNodeState TargetSpottedCheck()
 	{
 		if (stats["targetSpotted"])
@@ -168,6 +171,7 @@ public class BJ_SmartTank : DumbTank
 		}
 	}
 
+	//Checks if a base or enemy is reached
 	public BJ_BTNodeState TargetReachedCheck()
 	{
 		if (stats["targetReached"])
@@ -180,6 +184,8 @@ public class BJ_SmartTank : DumbTank
 		}
 	}
 
+
+	//Finds the nearest needed consumable
 	void FindhealthConsumable()
 	{
 		GameObject nearestHealth = FindNearestConsumableOfType("Health");
@@ -238,6 +244,7 @@ public class BJ_SmartTank : DumbTank
 		base.AIOnCollisionEnter(collision);
 	}
 
+	//Initialises tank
 	public override void AITankStart()
 	{
 		if (!isInitialised)
@@ -306,6 +313,7 @@ public class BJ_SmartTank : DumbTank
 		}
 	}
 
+	//Function to check if a tank or base is spotted
 	public void CheckTargetSpotted()
 	{
 		if (enemyTank != null)
@@ -325,6 +333,8 @@ public class BJ_SmartTank : DumbTank
 			stats["targetSpotted"] = false;
 		}
 	}
+
+	//Function to determine if a tank or base is reached
 	public void CheckTargetReached()
 	{
 		if (enemyTank != null)
@@ -344,6 +354,8 @@ public class BJ_SmartTank : DumbTank
 			stats["targetReached"] = false;
 		}
 	}
+
+	//Function to check if the enemy is low on fuel, used in the outrun state
 	public void CheckFuel()
 	{
 		if (enemyTank != null)
